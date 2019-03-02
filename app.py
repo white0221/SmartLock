@@ -44,8 +44,12 @@ if channel_access_token is None:
 line_bot_api = LineBotApi(channel_access_token)
 parser = WebhookParser(channel_secret)
 
+key_status = True
+# status is True = key is locked.
+# status is False = key is unlocked.
 @app.route("/callback", methods=['POST'])
 def callback():
+    global key_status
     signature = request.headers['X-Line-Signature']
 
     # get request body as text
@@ -64,10 +68,24 @@ def callback():
             continue
         if not isinstance(event.message, TextMessage):
             continue
-            
+
+        message = event.message.text
+        reply = event.message.text
+        if message.count('開錠'):
+            key_status = False
+        elif message.count('施錠'):
+            key_status = True
+        elif message.count('オートロック'):
+            print "automode"
+        elif message.count('状態確認'):
+            if key_status is True:
+                reply = "鍵は締まっています"
+            else:
+                reply = "鍵は空いています"
+
         line_bot_api.reply_message(
             event.reply_token,
-            TextSendMessage(text=event.message.text)
+            TextSendMessage(text=reply)
         )
         
     return 'OK'
