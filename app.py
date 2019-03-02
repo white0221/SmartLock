@@ -16,6 +16,7 @@ from __future__ import unicode_literals
 
 import os
 import sys
+import smartlock
 from argparse import ArgumentParser
 
 from flask import Flask, request, abort
@@ -72,8 +73,10 @@ def callback():
         message = event.message.text
         reply = event.message.text
         if message.count('開錠'):
+            smartlock.unlock()
             key_status = False
         elif message.count('施錠'):
+            smartlock.lock()
             key_status = True
         elif message.count('オートロック'):
             print "automode"
