@@ -16,6 +16,7 @@ from __future__ import unicode_literals
 
 import os
 import sys
+import time
 import smartlock
 from argparse import ArgumentParser
 
@@ -77,9 +78,15 @@ def callback():
         message = event.message.text
         reply = event.message.text
         if message.count('開錠'):
+            reply = "開錠します"
             smartlock.unlock()
             key_status = False
+            if automode is True:
+                time.sleep(5)
+                smartlock.lock()
+                reply = "オートロックしました"
         elif message.count('施錠'):
+            reply = "施錠します"
             smartlock.lock()
             key_status = True
         elif message.count('オートロック'):
