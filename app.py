@@ -48,9 +48,13 @@ parser = WebhookParser(channel_secret)
 key_status = True
 # status is True = key is locked.
 # status is False = key is unlocked.
+automode = False
+# automode is True = if unlock then wait 10sec. and lock.
+# automode is Fals = autolock mode is down.
 @app.route("/callback", methods=['POST'])
 def callback():
     global key_status
+    global automode
     signature = request.headers['X-Line-Signature']
 
     # get request body as text
@@ -79,12 +83,21 @@ def callback():
             smartlock.lock()
             key_status = True
         elif message.count('オートロック'):
-            print "automode"
+            if automode is True:
+                automode = False
+                reply = "オートロックモードを *無効* にしました"
+            else:
+                automode = True
+                reply = "オートロックモードを *有効* にしました"
         elif message.count('状態確認'):
             if key_status is True:
-                reply = "鍵は締まっています"
+                reply = "鍵は締まっています\n"
             else:
-                reply = "鍵は空いています"
+                reply = "鍵は空いています\n"
+            if automode is True:
+                reply += "オートロックモード: *有効*"
+            else:
+                reply += "オートロックモード: *無効*"
 
         line_bot_api.reply_message(
             event.reply_token,
